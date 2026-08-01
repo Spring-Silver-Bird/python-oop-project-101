@@ -7,6 +7,10 @@ class Validator:
         schema = NumberSchema()
         return schema
 
+    def list(self):
+        schema = ListSchema()
+        return schema
+
 
 class StringSchema:
     def __init__(self):
@@ -91,4 +95,37 @@ class NumberSchema:
                 rules.append(True)
             else:
                  return False
+        return all(rules)
+
+class ListSchema:
+    def __init__(self):
+        self.flag_required = False
+        self.sizeoflen = 0
+
+    def required(self):
+        self.flag_required = True
+        return self
+
+
+    def sizeof(self, lenth):
+        self.sizeoflen = lenth
+        return self
+
+    def is_valid(self, items):
+        rules = []
+        if items == None:
+            if not self.flag_required:
+                return True
+            else:
+                return False
+        else:
+            if type(items) == list:
+                rules.append(True)
+            else:
+                return False
+        if self.sizeoflen:
+            if len(items) == self.sizeoflen:
+                rules.append(True)
+            else:
+                return False
         return all(rules)
