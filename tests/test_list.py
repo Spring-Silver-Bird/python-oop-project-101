@@ -2,7 +2,7 @@ from validator.validator import Validator
 
 v = Validator()
 
-def test_vnumber():
+def test_difflist():
     assert v.list() is not v.list()
 
 def test_norequired():
@@ -11,7 +11,7 @@ def test_norequired():
 def test_required():
     assert v.list().required().is_valid(None) == False
 
-def test_anynumber():
+def test_anynumberlist():
     assert v.list().is_valid([3, 6, 9]) == True
 
 def test_emptylist():

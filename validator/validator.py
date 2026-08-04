@@ -11,11 +11,14 @@ class Validator:
         schema = ListSchema()
         return schema
 
+    def dict(self):
+        schema = DictSchema()
+        return schema
 
 class StringSchema:
     def __init__(self):
         self.flag_required = False
-        self.min_lenth = 0
+        self.min_lenth = 1
         self.cont = ''
 
 
@@ -119,13 +122,46 @@ class ListSchema:
             else:
                 return False
         else:
-            if type(items) == list:
+            if isinstance(items, list):
                 rules.append(True)
             else:
                 return False
         if self.sizeoflen:
             if len(items) == self.sizeoflen:
                 rules.append(True)
+            else:
+                return False
+        return all(rules)
+
+class DictSchema:
+    def __init__(self):
+        self.flag_required = False
+        self.shape_cheme = {}
+
+    def required(self):
+        self.flag_required = True
+        return self
+    def shape(self, items):
+        for key in items:
+            self.shape_cheme[key] = items[key]
+        return self
+
+
+    def is_valid(self, items):
+        rules = []
+        if items is None:
+            if not self.flag_required:
+                return True
+            else:
+                return False
+        else:
+            if isinstance(items, dict):
+                for key in self.shape_cheme:
+                    schema = self.shape_cheme[key]
+                    if key in items:
+                        rules.append(schema.is_valid(items[key]))
+                    else:
+                        rules.append(schema.is_valid(None))
             else:
                 return False
         return all(rules)

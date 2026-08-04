@@ -8,6 +8,9 @@ def test_vstring():
 def test_norequired():
     assert v.string().is_valid(None) == True
 
+def test_emptystring():
+    assert v.string().required().is_valid('') == False
+
 def test_required():
     assert v.string().required().is_valid(None) == False
 
