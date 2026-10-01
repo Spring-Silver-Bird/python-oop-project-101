@@ -1,3 +1,5 @@
+setup: install
+
 install:
 	uv sync
 
@@ -22,4 +24,4 @@ check: test lint
 build:
 	uv build
 
-.PHONY: install update test lint selfcheck check build
+.PHONY: install update test lint selfcheck check build setup
