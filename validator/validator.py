@@ -1,167 +1,35 @@
+from validator.schemes import StringSchema, NumberSchema, ListSchema, DictSchema
+
 class Validator:
+    def __init__(self) -> None:
+        self.custom_validations = {
+            'string': {},
+            'number': {},
+            'list': {},
+            'dict': {},
+        }
+
     def string(self):
-        schema = StringSchema()
+        schema = StringSchema(self.custom_validations['string'])
         return schema
 
     def number(self):
-        schema = NumberSchema()
+        schema = NumberSchema(self.custom_validations['number'])
         return schema
 
     def list(self):
-        schema = ListSchema()
+        schema = ListSchema(self.custom_validations['list'])
         return schema
 
     def dict(self):
-        schema = DictSchema()
+        schema = DictSchema(self.custom_validations['dict'])
         return schema
 
-class StringSchema:
-    def __init__(self):
-        self.flag_required = False
-        self.min_lenth = 1
-        self.cont = ''
+    def add_validator(self, schema_type, name, func):
+        if schema_type not in self.custom_validations:
+            raise ValueError(f"Unknown schema type: {schema_type}")
+        self.custom_validations[schema_type][name] = func
 
 
-    def required(self):
-        self.flag_required = True
-        return self
-
-
-    def min_len(self, lenth):
-        self.min_lenth = lenth
-        return self
-
-    def contains(self, item):
-        self.cont = item
-        return self
-
-
-    def is_valid(self, string):
-        rules = []
-        if string == None:
-            if not self.flag_required:
-                return True
-            return False
-
-        if self.min_lenth:
-            if len(string) >= self.min_lenth:
-                rules.append(True)
-            else:
-                rules.append(False)
-        if self.cont:
-            if self.cont in string:
-                rules.append(True)
-            else:
-                 rules.append(False)
-        return all(rules)
-
-
-class NumberSchema:
-    def __init__(self):
-        self.flag_required = False
-        self.pos = False
-        self.ran = []
-
-
-    def required(self):
-        self.flag_required = True
-        return self
-
-
-    def positive(self):
-        self.pos = True
-        return self
-
-    def range(self, begin, end):
-        self.ran = [begin, end]
-        return self
-
-
-    def is_valid(self, number):
-        rules = []
-        if number == None:
-            if not self.flag_required:
-                return True
-            return False
-        else:
-            if isinstance(number, int):
-                rules.append(True)
-            else:
-                return False
-        if self.pos:
-            if number > 0:
-                rules.append(True)
-            else:
-                return False
-        if self.ran:
-            if number >= self.ran[0] and number <= self.ran[1]:
-                rules.append(True)
-            else:
-                 return False
-        return all(rules)
-
-class ListSchema:
-    def __init__(self):
-        self.flag_required = False
-        self.sizeoflen = 0
-
-    def required(self):
-        self.flag_required = True
-        return self
-
-
-    def sizeof(self, lenth):
-        self.sizeoflen = lenth
-        return self
-
-    def is_valid(self, items):
-        rules = []
-        if items == None:
-            if not self.flag_required:
-                return True
-            else:
-                return False
-        else:
-            if isinstance(items, list):
-                rules.append(True)
-            else:
-                return False
-        if self.sizeoflen:
-            if len(items) == self.sizeoflen:
-                rules.append(True)
-            else:
-                return False
-        return all(rules)
-
-class DictSchema:
-    def __init__(self):
-        self.flag_required = False
-        self.shape_cheme = {}
-
-    def required(self):
-        self.flag_required = True
-        return self
-    def shape(self, items):
-        for key in items:
-            self.shape_cheme[key] = items[key]
-        return self
-
-
-    def is_valid(self, items):
-        rules = []
-        if items is None:
-            if not self.flag_required:
-                return True
-            else:
-                return False
-        else:
-            if isinstance(items, dict):
-                for key in self.shape_cheme:
-                    schema = self.shape_cheme[key]
-                    if key in items:
-                        rules.append(schema.is_valid(items[key]))
-                    else:
-                        rules.append(schema.is_valid(None))
-            else:
-                return False
-        return all(rules)
+    def is_valid(self):
+        pass

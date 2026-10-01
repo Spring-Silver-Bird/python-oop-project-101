@@ -1,30 +1,55 @@
-from validator.validator import Validator
+import pytest
 
-v = Validator()
+from validator import Validator
 
-def test_vstring():
-    assert v.string() is not v.string()
 
-def test_norequired():
-    assert v.string().is_valid(None) == True
+@pytest.fixture()
+def validator():
+    return Validator()
 
-def test_emptystring():
-    assert v.string().required().is_valid('') == False
 
-def test_required():
-    assert v.string().required().is_valid(None) == False
+def test_schema_independence(validator):
+    schema = validator.string()
+    schema2 = validator.string()
+    assert schema != schema2
 
-def test_minlentrue():
-    assert v.string().min_len(5).is_valid('hexlet') is True
+    schema.required()
+    assert schema2.is_valid(None) is True
 
-def test_minlenfalse():
-    assert v.string().min_len(5).is_valid('hex') is False
 
-def test_containstrue():
-    assert v.string().required().contains('ex').is_valid('Hexlet') == True
+def test_default(validator):
+    schema = validator.string()
+    assert schema.is_valid('') is True
+    assert schema.is_valid(None) is True
+    assert schema.is_valid('what does the fox say') is True
 
-def test_containsfalse():
-    assert v.string().required().contains('ab').is_valid('Hexlet') == False
 
-def test_doubleminlen():
-    assert v.string().min_len(10).min_len(4).is_valid('Hexlet') == True
+def test_required(validator):
+    schema = validator.string()
+    schema.required()
+    assert schema.is_valid('') is False
+    assert schema.is_valid(None) is False
+    assert schema.is_valid('what does the fox say') is True
+
+
+def test_contains(validator):
+    schema = validator.string()
+    schema.contains("what")
+    assert schema.is_valid('what does the fox say') is True
+    assert schema.is_valid('hello') is False
+    schema.contains("hello")
+    assert schema.is_valid('what does the fox say') is False
+    assert schema.is_valid('hello') is True
+
+
+def test_min_length(validator):
+    schema = validator.string()
+    schema.min_len(6)
+    assert schema.is_valid('1234') is False
+    assert schema.is_valid('123456789') is True
+
+
+def test_fluent(validator):
+    schema = validator.string()
+    assert schema.contains('what').is_valid('what does the fox say') is True
+    assert validator.string().min_len(10).min_len(4).is_valid('Hexlet') is True

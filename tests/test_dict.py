@@ -1,46 +1,53 @@
-from validator.validator import Validator
+import pytest
 
-v = Validator()
+from validator import Validator
 
-def test_diffdict():
-    assert v.dict() is not v.list()
 
-def test_norequired():
-    assert v.dict().is_valid(None) == True
+@pytest.fixture()
+def validator():
+    return Validator()
 
-def test_required():
-    assert v.dict().required().is_valid(None) == False
 
-def test_anytype():
-    assert v.dict().is_valid([3, 6, 9]) == False
-def test_keytrue():
-    schema = v.dict().shape({
-        'name': v.string().required(),
-        'age': v.number().positive(),
-        })
-    print(schema.shape_cheme)
-    assert schema.is_valid({'name': 'kolya', 'age': 100}) == True
+def test_schema_independence(validator):
+    schema = validator.list()
+    schema2 = validator.list()
+    assert schema != schema2
 
-def test_noage():
-    schema = v.dict().shape({
-        'name': v.string().required(),
-        'age': v.number().positive(),
-        })
-    print(schema.shape_cheme)
-    assert schema.is_valid({'name': 'maya', 'age': None}) == True
+    schema.required()
+    assert schema2.is_valid(None) is True
 
-def test_noname():
-    schema = v.dict().shape({
-        'name': v.string().required(),
-        'age': v.number().positive(),
-        })
-    print(schema.shape_cheme)
-    assert schema.is_valid({'name': '', 'age': 73}) == False
 
-def test_nokey():
-    schema = v.dict().shape({
-        'name': v.string().required(),
-        'age': v.number().positive(),
-        })
-    print(schema.shape_cheme)
-    assert schema.is_valid({'name': 'Katarina'}) == True
+def test_default(validator):
+    schema = validator.list()
+    assert schema.is_valid(None) is True
+    assert schema.is_valid([1, 3, 4]) is True
+    assert schema.is_valid((1, 3, 4)) is False
+
+
+def test_required(validator):
+    schema = validator.list()
+    schema.required()
+    assert schema.is_valid(None) is False
+    assert schema.is_valid(8) is False
+    assert schema.is_valid([1, 2, 3]) is True
+    assert schema.is_valid((1, 2)) is False
+    assert schema.is_valid([]) is True
+    assert schema.is_valid(['hexlet']) is True
+
+
+def test_sizeof(validator):
+    schema = validator.list()
+    schema.sizeof(2)
+    assert schema.is_valid([-6]) is False
+    assert schema.is_valid([-5, -5]) is True
+    assert schema.is_valid([]) is False
+    assert schema.is_valid([5, 5, 5]) is False
+    schema.sizeof(0)
+    assert schema.is_valid([]) is True
+    assert schema.is_valid([1]) is False
+
+
+def test_fluent(validator):
+    schema = validator.list()
+    assert schema.required().sizeof(2).is_valid([2, 5]) is True
+    assert validator.list().required().is_valid(None) is False

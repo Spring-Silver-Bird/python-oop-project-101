@@ -1,42 +1,60 @@
-from validator.validator import Validator
+import pytest
 
-v = Validator()
+from validator import Validator
 
-def test_vnumber():
-    assert v.number() is not v.number()
 
-def test_norequired():
-    assert v.number().is_valid(None) == True
+@pytest.fixture()
+def validator():
+    return Validator()
 
-def test_required():
-    assert v.number().required().is_valid(None) == False
 
-def test_anynumber():
-    assert v.number().is_valid(7) == True
+def test_schema_independence(validator):
+    schema = validator.number()
+    schema2 = validator.number()
+    assert schema != schema2
 
-def test_positivetrue():
-    assert v.number().positive().is_valid(10) == True
+    schema.required()
+    assert schema2.is_valid(None) is True
 
-def test_positivefalse():
-    assert v.number().positive().is_valid(-5) == False
 
-def test_rangetrue():
-    assert v.number().range(-5, 5).is_valid(2) == True
+def test_default(validator):
+    schema = validator.number()
+    assert schema.is_valid(None) is True
+    assert schema.is_valid(7) is True
 
-def test_rangefalse():
-    assert v.number().range(-5, 5).is_valid(7) == False
 
-def test_rangeborder():
-    assert v.number().range(-5, 5).is_valid(-5) == True
+def test_required(validator):
+    schema = validator.number()
+    schema.required()
+    assert schema.is_valid(None) is False
+    assert schema.is_valid(8) is True
 
-def test_allrulestrue():
-    assert v.number().positive().range(-5, 10).is_valid(6) == True
 
-def test_allrulesfalse():
-    assert v.number().positive().range(-5, 5).is_valid(-3) == False
+def test_positive(validator):
+    schema = validator.number()
+    schema.positive()
+    assert schema.is_valid(None) is True
+    assert schema.is_valid(-7) is False
+    assert schema.is_valid(0) is False
+    assert schema.is_valid(7) is True
+    schema.positive()
+    assert schema.is_valid(4) is True
+    assert schema.is_valid(-4) is False
+    assert schema.is_valid(0) is False
 
-def test_allrulesfalse2():
-    assert v.number().positive().range(-5, 5).is_valid(0) == False
 
-def test_allrulesfalse2():
-    assert v.number().required().positive().range(-5, 5).is_valid(None) == False
+def test_range(validator):
+    schema = validator.number()
+    schema.range(-5, 5)
+    assert schema.is_valid(-6) is False
+    assert schema.is_valid(-5) is True
+    assert schema.is_valid(6) is False
+    assert schema.is_valid(5) is True
+    assert schema.is_valid(0) is True
+
+
+def test_fluent(validator):
+    schema = validator.number()
+    assert schema.positive().is_valid(10) is True
+    assert (validator.number().positive().required().positive().is_valid(-10)
+            is False)
